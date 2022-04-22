@@ -1,13 +1,14 @@
 #include "lotools/coordinate.h"
+#include "lotools/utility.h"
 
 #include <any>
+
+#include <iostream>
 
 
 
 int main()
 {
-
-    
     // lot::coordinate<int, 3> kaka{1,5,3};
     // lot::coordinate<int, 3> mymy{3,2,1};
 
