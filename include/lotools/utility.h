@@ -30,7 +30,7 @@ struct any_type_true<at_left, BoolOper, T, U>
 template <template <typename, typename> typename BoolOper, typename T, typename U, typename... Rest>
 struct any_type_true<false, BoolOper, T, U, Rest...>
 {
-    using type = std::conditional_t<BoolOper<U, T>::value, U, typename any_type_true<true, BoolOper, T, Rest...>::type>;
+    using type = std::conditional_t<BoolOper<U, T>::value, U, typename any_type_true<false, BoolOper, T, Rest...>::type>;
 };
 
 template <template <typename, typename> typename BoolOper, typename T, typename U>
