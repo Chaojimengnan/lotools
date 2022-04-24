@@ -1,6 +1,7 @@
 #pragma once
 
 #include <type_traits>
+#include <utility>
 
 namespace lot {
 
@@ -19,10 +20,10 @@ namespace detail {
 } // namespace detail
 
 /**
- * @brief A RAII-based tool class, which will call the specified initialization 
- * function on construction and the specified destructor on destructon. 
+ * @brief A RAII-based tool class, which will call the specified initialization
+ * function on construction and the specified destructor on destructon.
  * Suitable for some C libraries that need to call initialization and destruction
- * 
+ *
  * @tparam InitFunc Type of initialization function. You can use `decltype(your_init_function)`
  * @tparam DestroyFunc Type of destructon function. You can use `decltype(your_destory_function)`
  * @tparam init_func Initialize function instances, such as function pointers or callable objects
@@ -45,7 +46,7 @@ struct raii_control : public detail::return_val_checker<decltype(init_func())>
         {
             init_func(std::move(args)...);
         } else {
-            return_val = init_func(std::move(args)...);
+            this->return_val = init_func(std::move(args)...);
         }
     }
 
@@ -104,7 +105,7 @@ struct unique_val : private detail::add_del_if_not_void<Del>
         {
             if constexpr (!std::is_same_v<Del, void>)
                 if (this->is_del)
-                    del(val);
+                    this->del(val);
 
             val = u.val;
             if constexpr (!std::is_same_v<Del, void>)
@@ -121,7 +122,7 @@ struct unique_val : private detail::add_del_if_not_void<Del>
     {
         if constexpr (!std::is_same_v<Del, void>)
             if (this->is_del)
-                del(val);
+                this->del(val);
     }
 
     [[nodiscard]] T& get() noexcept
