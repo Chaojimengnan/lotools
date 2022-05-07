@@ -14,9 +14,9 @@
 namespace lot {
 
 /**
- * @brief A simple coordinate template that can represent coordinates in any dimension, 
+ * @brief A simple coordinate template that can represent coordinates in any dimension,
  * internally using std::array to store the coordinates
- * 
+ *
  * @tparam T Data type of coordinate
  * @tparam dimension The number of dimensions
  */
@@ -111,13 +111,13 @@ struct coordinate
         return lhs << rhs.to_string();
     }
 
-    friend std::istream& operator>>(std::istream& in, coordinate<T, dimension>& rhs)
+    friend std::istream& operator>>(std::istream& in_stream, coordinate<T, dimension>& rhs)
     {
-        char c = '\0';
+        char temp_char = '\0';
         bool succesd = true;
         while (true)
         {
-            if (!(in.get(c) && c == '('))
+            if (!(in_stream.get(temp_char) && temp_char == '('))
             {
                 succesd = false;
                 break;
@@ -125,16 +125,16 @@ struct coordinate
 
             for (size_t i = 0; i < rhs.data.size(); i++)
             {
-                if (!(in >> rhs.data.at(i) && in.get(c)))
+                if (!(in_stream >> rhs.data.at(i) && in_stream.get(temp_char)))
                 {
                     succesd = false;
                     break;
                 }
 
-                if (c == ')')
+                if (temp_char == ')')
                     break;
 
-                if (c != ',')
+                if (temp_char != ',')
                 {
                     succesd = false;
                     break;
@@ -147,40 +147,40 @@ struct coordinate
         if (!succesd)
             throw std::runtime_error("From string to data fails!");
 
-        return in;
+        return in_stream;
     }
 
     [[nodiscard]] std::string to_string() const
     {
         // return fmt::format("({},{})", x, y);
-        std::stringstream o;
-        o << "(";
-        o << data.at(0);
+        std::stringstream out;
+        out << "(";
+        out << data.at(0);
         for (size_t i = 1; i < data.size(); i++)
         {
-            o << ",";
-            o << data.at(i);
+            out << ",";
+            out << data.at(i);
         }
 
-        o << ")";
-        return o.str();
+        out << ")";
+        return out.str();
     }
 
     static coordinate<T, dimension> from_string(std::string_view str)
     {
-        std::istringstream in(str.data());
+        std::istringstream in_stream(str.data());
         coordinate<T, dimension> temp {};
-        in >> temp;
+        in_stream >> temp;
         return temp;
     }
 
-    DataType data;
+    DataType data; // NOLINT(misc-non-private-member-variables-in-classes)
 };
 
-template<typename T>
+template <typename T>
 using point = coordinate<T, 2>;
 
-template<typename T>
+template <typename T>
 using tripoint = coordinate<T, 3>;
 
 } // namespace lot

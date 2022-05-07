@@ -61,8 +61,8 @@ namespace detail {
     struct add_del_if_not_void
     {
         add_del_if_not_void(Del del, bool is_del) : del(std::move(del)), is_del(is_del) { }
-        Del del;
-        bool is_del = true;
+        Del del;            // NOLINT(misc-non-private-member-variables-in-classes)
+        bool is_del = true; // NOLINT(misc-non-private-member-variables-in-classes)
     };
 
     template <>
@@ -82,7 +82,7 @@ struct unique_val : private detail::add_del_if_not_void<Del>
     using base = detail::add_del_if_not_void<Del>;
 
     template <typename T2 = T, typename Del2 = Del, std::enable_if_t<std::is_default_constructible_v<T2> && (std::is_same_v<Del2, void> || std::is_default_constructible_v<Del2>), int> = 0>
-    constexpr unique_val() {};
+    constexpr unique_val() {}; // NOLINT(modernize-use-equals-default)
 
     template <typename Del2 = Del, std::enable_if_t<!std::is_same_v<Del2, void>, int> = 0>
     constexpr unique_val(const T& val, Del2 del) : base(del, true), val(val) { }
@@ -93,26 +93,26 @@ struct unique_val : private detail::add_del_if_not_void<Del>
     unique_val(const unique_val&) = delete;
     unique_val& operator=(const unique_val&) = delete;
 
-    unique_val(unique_val&& u) noexcept : val(u.val), base(std::move(u))
+    unique_val(unique_val&& right) noexcept : val(right.val), base(std::move(right))
     {
         if constexpr (!std::is_same_v<Del, void>)
-            u.is_del = false;
+            right.is_del = false;
     }
 
-    unique_val& operator=(unique_val&& u) noexcept
+    unique_val& operator=(unique_val&& right) noexcept
     {
-        if (this != &u)
+        if (this != &right)
         {
             if constexpr (!std::is_same_v<Del, void>)
                 if (this->is_del)
-                    this->del(val);
+                    this->del(right);
 
-            val = u.val;
+            right = right.val;
             if constexpr (!std::is_same_v<Del, void>)
             {
                 this->is_del = true;
-                this->del = u.del;
-                u.is_del = false;
+                this->del = right.del;
+                right.is_del = false;
             }
         }
         return *this;
