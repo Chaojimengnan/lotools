@@ -8,7 +8,7 @@ namespace lot {
  * @brief A template meta-tool that uses BoolOper and T to test every type starting with U until BoolOper gets true,
  * at which point the 'type' member is the type of U that succeeded in the test,
  * and if all types are false, then the final 'type' member is void
- * 
+ *
  * @tparam at_left If true, BoolOper<T, U>, otherwise BoolOper<U, T>
  * @tparam BoolOper A test template which should have a 'value' member to indicate whether the test was successful, e.g. std::is_same
  * @tparam T The type to test

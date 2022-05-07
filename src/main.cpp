@@ -2,7 +2,6 @@
 
 #include <iostream>
 
-
 struct message
 {
     std::string_view usage;
