@@ -1,27 +1,45 @@
-#include "lotools/coordinate.h"
-#include "lotools/utility.h"
-
-#include <any>
+#include "lotools/cmdparser.h"
 
 #include <iostream>
 
 
-
-int main()
+struct message
 {
-    // lot::coordinate<int, 3> kaka{1,5,3};
-    // lot::coordinate<int, 3> mymy{3,2,1};
+    std::string_view usage;
+    std::string_view help_tip;
+};
 
-    // std::cout << kaka.to_string();
+struct cmd_help : lot::basic_command
+{
+    [[nodiscard]] const char* name() const noexcept override
+    {
+        return "help";
+    }
 
-    // std::cout << lot::coordinate<int, 3>::from_string("(3,4,5)").to_string();
+    void perform(const lot::cmdparser& /*args*/) const override
+    {
+        std::cout << "hehe\n";
+    }
+};
 
-    // auto dada = kaka+mymy;
+int main(int argc, char* argv[])
+{
+    try {
+        lot::cmdparser parser(argc, argv);
+        parser.add(std::make_unique<cmd_help>());
+        parser.add(
+            "dada",
+            [](const lot::cmdparser&) { std::cout << "my dada\n"; },
+            [](const std::any*) { return message { "tc dada", "一个简单的示例" }; });
 
-    // std::cout << (kaka == mymy) << "\n";
+        auto info = std::any_cast<message>(parser.get_command_map().at("dada")->info());
+        std::cout << info.usage << "\n";
+        std::cout << info.help_tip << "\n";
 
-    // std::cout << (-kaka).to_string() << "\n";
+        parser.parse();
+        parser.exec();
 
-    // std::cout << dada.to_string();
-    return 0;
+    } catch (const std::exception& e) {
+        std::cerr << e.what() << "\n";
+    }
 }
