@@ -95,6 +95,17 @@ public:
         {
             auto&& item = *iter;
 
+            // current_item is an option pair
+            if (auto equal_pos = item.find('=');
+                equal_pos != std::string_view::npos && item.size() >= 3
+                && item.substr(0, 2) == "--")
+            {
+                std::string_view key = item.substr(0, equal_pos);
+                std::string_view value = item.substr(equal_pos + 1);
+                option_pair_list_.emplace_back(key, value);
+                continue;
+            }
+
             // current_item is an option
             if (item.size() >= 3 && item.substr(0, 2) == "--")
             {
@@ -169,6 +180,13 @@ public:
         return command_name_;
     }
 
+    // Option pair likes "--option=value", e.g. "--password=123"
+    [[nodiscard]] const std::vector<std::string_view>& get_option_pair_list() const noexcept
+    {
+        lo_assert(is_parsed_);
+        return option_list_;
+    }
+
     // Option is start with "--", e.g. "--help"
     [[nodiscard]] const std::vector<std::string_view>& get_option_list() const noexcept
     {
@@ -176,14 +194,14 @@ public:
         return option_list_;
     }
 
-    // Item pair likes "key=<value>", e.g. "var1=[123]"
+    // Item pair likes "key=value", e.g. "var1=123"
     [[nodiscard]] const std::vector<std::pair<std::string_view, std::string_view>>& get_value_pair_list() const noexcept
     {
         lo_assert(is_parsed_);
         return value_pair_list_;
     }
 
-    // Value likes "<value>", e.g. "[123]"
+    // Value likes "value", e.g. "123"
     [[nodiscard]] const std::vector<std::string_view>& get_value_list() const noexcept
     {
         lo_assert(is_parsed_);
@@ -198,6 +216,7 @@ private:
     std::vector<std::string_view> value_list_;
     std::vector<std::string_view> raw_;
     std::vector<std::pair<std::string_view, std::string_view>> value_pair_list_;
+    std::vector<std::pair<std::string_view, std::string_view>> option_pair_list_;
     std::unordered_map<std::string, std::unique_ptr<basic_command>> command_map_;
 };
 } // namespace lot
