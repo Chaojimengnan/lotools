@@ -14,14 +14,6 @@
 
 namespace lot {
 
-#ifndef LOT_BEGIN_SIGN
-#    define LOT_BEGIN_SIGN '[' // NOLINT(cppcoreguidelines-macro-usage)
-#endif
-
-#ifndef LOT_END_SIGN
-#    define LOT_END_SIGN ']' // NOLINT(cppcoreguidelines-macro-usage)
-#endif
-
 class cmdparser;
 
 struct basic_command // NOLINT(cppcoreguidelines-special-member-functions)
@@ -83,12 +75,10 @@ class command_not_found_error : public std::runtime_error
 class cmdparser
 {
 public:
-    cmdparser(int argc, char* argv[]) : argc_(argc)
+    cmdparser(int argc, char* argv[])
     {
-        for (int i = 1; i < argc; ++i) {
-            raw_ += argv[i];
-            raw_ += " ";
-        }
+        for (int i = 1; i < argc; ++i)
+            raw_.emplace_back(argv[i]);
     }
 
     void parse()
@@ -96,62 +86,36 @@ public:
         lo_assert(!is_parsed_);
         is_parsed_ = true;
 
-        if (argc_ == 0)
+        if (std::size(raw_) == 0)
             throw args_parse_error("Parameter parsing error: Requires a parameter to specify the command");
 
-        std::string_view raw_view { raw_ };
+        command_name_ = raw_[0];
 
-        auto split_space_item = [&] {
-            auto split_pos = raw_view.find(' ');
-            auto item = raw_view.substr(0, split_pos);
-            raw_view = raw_view.substr(split_pos + 1);
-            return item;
-        };
-
-        command_name_ = split_space_item();
-
-        while (!raw_view.empty())
+        for (auto iter = ++raw_.begin(); iter != raw_.end(); ++iter)
         {
+            auto&& item = *iter;
+
             // current_item is an option
-            if (raw_view.size() >= 3 && raw_view.substr(0, 2) == "--")
+            if (item.size() >= 3 && item.substr(0, 2) == "--")
             {
-                option_list_.push_back(split_space_item());
+                option_list_.push_back(item);
                 continue;
             }
 
             // current_item is key-value pair
-            auto single_item = raw_view.substr(0, raw_view.find(' '));
-            if (auto equal_pos = single_item.find('='),
-                second_quote_pos = raw_view.find(LOT_END_SIGN, equal_pos);
-                raw_view.size() >= 3 && equal_pos != std::string_view::npos
-                && raw_view.at(equal_pos + 1) == LOT_BEGIN_SIGN
-                && second_quote_pos != std::string_view::npos)
+            if (auto equal_pos = item.find('=');
+                equal_pos != std::string_view::npos)
             {
-                std::string_view key = raw_view.substr(0, equal_pos);
-                raw_view = raw_view.substr(equal_pos + 2);
-                second_quote_pos = raw_view.find(LOT_END_SIGN);
-                std::string_view value = raw_view.substr(0, second_quote_pos);
+                std::string_view key = item.substr(0, equal_pos);
+                std::string_view value = item.substr(equal_pos + 1);
                 value_pair_list_.emplace_back(key, value);
-                raw_view = raw_view.substr(second_quote_pos + 2);
                 continue;
             }
 
             // current_item is pure value
-            single_item = raw_view.substr(0, raw_view.find(' '));
-            if (auto first_quote_pos = single_item.find(LOT_BEGIN_SIGN),
-                second_quote_pos = raw_view.find(LOT_END_SIGN, first_quote_pos + 1);
-                raw_view.size() >= 2 && first_quote_pos != std::string_view::npos
-                && second_quote_pos != std::string_view::npos)
-            {
-                raw_view = raw_view.substr(first_quote_pos + 1);
-                second_quote_pos = raw_view.find(LOT_END_SIGN);
-                std::string_view value = raw_view.substr(0, second_quote_pos);
-                value_list_.emplace_back(value);
-                raw_view = raw_view.substr(second_quote_pos + 2);
-                continue;
-            }
+            value_list_.emplace_back(item);
 
-            throw args_parse_error("Parameter parsing error:  \"" + std::string(raw_view) + "\", which isn't one of option(--option), key-value pair(key=" + LOT_BEGIN_SIGN + "value" + LOT_END_SIGN + "), pure value(" + LOT_BEGIN_SIGN + "value" + LOT_END_SIGN + ")");
+            // throw args_parse_error("Parameter parsing error:  \"" + std::string(item) + "\", which isn't one of option(--option), key-value pair(key=value), pure value(value)");
         }
 
         is_vaild_ = true;
@@ -193,7 +157,7 @@ public:
         return is_vaild_;
     }
 
-    [[nodiscard]] const std::string& raw() const noexcept
+    [[nodiscard]] const std::vector<std::string_view>& raw() const noexcept
     {
         lo_assert(is_parsed_);
         return raw_;
@@ -227,13 +191,12 @@ public:
     }
 
 private:
-    int argc_ = 0;
     bool is_vaild_ = false;
     bool is_parsed_ = false;
-    std::string raw_;
     std::string_view command_name_;
     std::vector<std::string_view> option_list_;
     std::vector<std::string_view> value_list_;
+    std::vector<std::string_view> raw_;
     std::vector<std::pair<std::string_view, std::string_view>> value_pair_list_;
     std::unordered_map<std::string, std::unique_ptr<basic_command>> command_map_;
 };
