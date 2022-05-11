@@ -181,10 +181,10 @@ public:
     }
 
     // Option pair likes "--option=value", e.g. "--password=123"
-    [[nodiscard]] const std::vector<std::string_view>& get_option_pair_list() const noexcept
+    [[nodiscard]] const std::vector<std::pair<std::string_view, std::string_view>>& get_option_pair_list() const noexcept
     {
         lo_assert(is_parsed_);
-        return option_list_;
+        return option_pair_list_;
     }
 
     // Option is start with "--", e.g. "--help"
