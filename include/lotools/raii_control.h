@@ -56,6 +56,29 @@ struct raii_control : public detail::return_val_checker<decltype(init_func())>
     }
 };
 
+template <typename InitFunc, typename DestroyFunc>
+struct raii_control_functor
+{
+    raii_control_functor(InitFunc init_func, DestroyFunc destroy_func) : init_func_(init_func), destroy_func_(destroy_func)
+    {
+        init_func_();
+    }
+
+    ~raii_control_functor() noexcept(noexcept(destroy_func_()))
+    {
+        destroy_func_();
+    }
+
+    raii_control_functor(const raii_control_functor&) = delete;
+    raii_control_functor(raii_control_functor&&) = delete;
+    raii_control_functor& operator=(const raii_control_functor&) = delete;
+    raii_control_functor& operator=(raii_control_functor&&) = delete;
+
+private:
+    InitFunc init_func_;
+    DestroyFunc destroy_func_;
+};
+
 namespace detail {
     template <typename Del>
     struct add_del_if_not_void

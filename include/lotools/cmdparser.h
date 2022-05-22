@@ -145,16 +145,18 @@ public:
         iter->second->perform(*this);
     }
 
-    void add(std::unique_ptr<basic_command> command)
+    cmdparser& add(std::unique_ptr<basic_command> command)
     {
         lo_assert(!is_parsed_);
         command_map_[command->name()] = std::move(command);
+        return *this;
     }
 
-    void add(const std::string& name, const std::function<void(const cmdparser& args)>& handler, const std::function<std::any(const std::any*)>& info_handler = {})
+    cmdparser& add(const std::string& name, const std::function<void(const cmdparser& args)>& handler, const std::function<std::any(const std::any*)>& info_handler = {})
     {
         lo_assert(!is_parsed_);
         command_map_[name] = std::make_unique<lambda_command>(name, handler, info_handler);
+        return *this;
     }
 
     [[nodiscard]] const std::unordered_map<std::string, std::unique_ptr<basic_command>>& get_command_map() const noexcept
