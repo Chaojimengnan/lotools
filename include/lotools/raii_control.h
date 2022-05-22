@@ -128,9 +128,9 @@ struct unique_val : private detail::add_del_if_not_void<Del>
         {
             if constexpr (!std::is_same_v<Del, void>)
                 if (this->is_del)
-                    this->del(right);
+                    this->del(val);
 
-            right = right.val;
+            val = right.val;
             if constexpr (!std::is_same_v<Del, void>)
             {
                 this->is_del = true;
