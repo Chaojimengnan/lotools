@@ -42,4 +42,27 @@ struct any_type_true<false, BoolOper, T, U>
 template <bool at_left, template <typename, typename> typename BoolOper, typename T, typename U, typename... Rest>
 using any_type_true_t = typename any_type_true<at_left, BoolOper, T, U, Rest...>::type;
 
+#if defined(_WIN32)
+constexpr auto LOERR_DETAIL_SLASH = '\\';
+#else
+constexpr auto LOERR_DETAIL_SLASH = '/';
+#endif
+
+// Format src location
+constexpr const char* get_file_name(const char* file_path)
+{
+    char temp_char = '\0';
+    int index = 0;
+    int last_slash_index = 0;
+    do
+    {
+        temp_char = file_path[index];
+        if (temp_char == LOERR_DETAIL_SLASH)
+            last_slash_index = index;
+        ++index;
+    } while (temp_char != '\0');
+
+    return file_path + last_slash_index + 1;
+}
+
 } // namespace lot
