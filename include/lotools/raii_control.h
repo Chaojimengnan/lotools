@@ -59,6 +59,7 @@ namespace detail {
     template <typename Del>
     struct add_del_if_not_void
     {
+        add_del_if_not_void() = default;
         add_del_if_not_void(Del del, bool is_del) : del(std::move(del)), is_del(is_del) { }
         Del del;            // NOLINT(misc-non-private-member-variables-in-classes)
         bool is_del = true; // NOLINT(misc-non-private-member-variables-in-classes)
