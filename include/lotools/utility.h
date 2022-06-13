@@ -42,6 +42,8 @@ struct any_type_true<false, BoolOper, T, U>
 template <bool at_left, template <typename, typename> typename BoolOper, typename T, typename U, typename... Rest>
 using any_type_true_t = typename any_type_true<at_left, BoolOper, T, U, Rest...>::type;
 
+// Utility function to get filename from path vvvvv
+
 #if defined(_WIN32)
 constexpr auto LOERR_DETAIL_SLASH = '\\';
 #else

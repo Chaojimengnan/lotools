@@ -1,5 +1,6 @@
 #pragma once
 
+#include <memory>
 #include <type_traits>
 #include <utility>
 
@@ -24,12 +25,10 @@ namespace detail {
  * function on construction and the specified destructor on destructon.
  * Suitable for some C libraries that need to call initialization and destruction
  *
- * @tparam InitFunc Type of initialization function. You can use `decltype(your_init_function)`
- * @tparam DestroyFunc Type of destructon function. You can use `decltype(your_destory_function)`
  * @tparam init_func Initialize function instances, such as function pointers or callable objects
- * @tparam destroy_func Destruction function instances, such as function pointers or callable objects
+ * @tparam destroy_func Destruction function instances, such as function pointers or callable objects(it should be noexcept for best)
  */
-template <typename InitFunc, typename DestroyFunc, InitFunc init_func, DestroyFunc destroy_func>
+template <auto init_func, auto destroy_func>
 struct raii_control : public detail::return_val_checker<decltype(init_func())>
 {
     raii_control(const raii_control&) = delete;
@@ -54,29 +53,6 @@ struct raii_control : public detail::return_val_checker<decltype(init_func())>
     {
         destroy_func();
     }
-};
-
-template <typename InitFunc, typename DestroyFunc>
-struct raii_control_functor
-{
-    raii_control_functor(InitFunc init_func, DestroyFunc destroy_func) : init_func_(init_func), destroy_func_(destroy_func)
-    {
-        init_func_();
-    }
-
-    ~raii_control_functor() noexcept(noexcept(destroy_func_()))
-    {
-        destroy_func_();
-    }
-
-    raii_control_functor(const raii_control_functor&) = delete;
-    raii_control_functor(raii_control_functor&&) = delete;
-    raii_control_functor& operator=(const raii_control_functor&) = delete;
-    raii_control_functor& operator=(raii_control_functor&&) = delete;
-
-private:
-    InitFunc init_func_;
-    DestroyFunc destroy_func_;
 };
 
 namespace detail {
@@ -167,5 +143,33 @@ struct unique_val : private detail::add_del_if_not_void<Del>
 private:
     T val;
 };
+
+// https://stackoverflow.com/a/51274008/15128365
+
+template <auto fn>
+struct ptr_deleter_from
+{
+    template <typename T>
+    constexpr void operator()(T* arg) const
+    {
+        fn(arg);
+    }
+};
+
+template <auto fn>
+struct val_deleter_from
+{
+    template <typename T>
+    constexpr void operator()(T& arg) const
+    {
+        fn(arg);
+    }
+};
+
+template <typename T, auto fn>
+using fn_unique_ptr = std::unique_ptr<T, ptr_deleter_from<fn>>;
+
+template <typename T, auto fn>
+using fn_unique_val = unique_val<T, val_deleter_from<fn>>;
 
 } // namespace lot
