@@ -101,7 +101,6 @@ namespace detail {
 template <std::uint32_t width, std::uint32_t height, bool is_add_addition = false>
 class ascii_screen : public detail::add_addition_data<width, height, is_add_addition>
 {
-#define ascii_screen_enable_if_add_addition template <bool is_add_addtion2 = is_add_addition, std::enable_if_t<is_add_addtion2, int> = 0>
 public:
     static constexpr char empty_char = ' ';
 
@@ -151,9 +150,7 @@ public:
         return set(pos_x, pos_y, empty_char);
     }
 
-    ascii_screen_enable_if_add_addition
-        ascii_screen&
-        clear_addition_data(std::uint32_t pos_x, std::uint32_t pos_y)
+    ascii_screen& clear_addition_data(std::uint32_t pos_x, std::uint32_t pos_y) requires(is_add_addition)
     {
         lo_assert(pos_x >= 0 && pos_x < width && pos_y >= 0 && pos_y < height);
         this->get_addition_data_map().erase(this->get_key_from_pos(pos_x, pos_y));
@@ -189,18 +186,14 @@ public:
         return *this;
     }
 
-    ascii_screen_enable_if_add_addition
-        ascii_screen&
-        set_addition_data(std::uint32_t pos_x, std::uint32_t pos_y, const std::any& addition_data)
+    ascii_screen& set_addition_data(std::uint32_t pos_x, std::uint32_t pos_y, const std::any& addition_data) requires(is_add_addition)
     {
         lo_assert(pos_x >= 0 && pos_x < width && pos_y >= 0 && pos_y < height);
         this->get_addition_data_map()[this->get_key_from_pos(pos_x, pos_y)] = addition_data;
         return *this;
     }
 
-    ascii_screen_enable_if_add_addition
-        ascii_screen&
-        set(std::uint32_t pos_x, std::uint32_t pos_y, char new_character, const std::any& addition_data)
+    ascii_screen& set(std::uint32_t pos_x, std::uint32_t pos_y, char new_character, const std::any& addition_data) requires(is_add_addition)
     {
         lo_assert(pos_x >= 0 && pos_x < width && pos_y >= 0 && pos_y < height);
         set(pos_x, pos_y, new_character);
@@ -214,9 +207,7 @@ public:
         return *this;
     }
 
-    ascii_screen_enable_if_add_addition
-        ascii_screen&
-        set_addition_data(const std::any& addition_data)
+    ascii_screen& set_addition_data(const std::any& addition_data) requires(is_add_addition)
     {
         for (std::uint32_t pos_y = 0; pos_y < height; pos_y++)
             for (std::uint32_t pos_x = 0; pos_x < width; pos_x++)
@@ -224,9 +215,7 @@ public:
         return *this;
     }
 
-    ascii_screen_enable_if_add_addition
-        ascii_screen&
-        set(char new_character, const std::any& addition_data)
+    ascii_screen& set(char new_character, const std::any& addition_data) requires(is_add_addition)
     {
         set(new_character);
         set_addition_data(addition_data);
@@ -242,9 +231,7 @@ public:
         return *this;
     }
 
-    ascii_screen_enable_if_add_addition
-        ascii_screen&
-        set_addition_data_row(std::uint32_t row, const std::any& addition_data, std::uint32_t start = 0, std::uint32_t end = width)
+    ascii_screen& set_addition_data_row(std::uint32_t row, const std::any& addition_data, std::uint32_t start = 0, std::uint32_t end = width) requires(is_add_addition)
     {
         lo_assert(row >= 0 && row < height);
         lo_assert(start >= 0 && start <= width && start <= end && end <= width);
@@ -253,9 +240,7 @@ public:
         return *this;
     }
 
-    ascii_screen_enable_if_add_addition
-        ascii_screen&
-        set_row(std::uint32_t row, char new_character, const std::any& addition_data, std::uint32_t start = 0, std::uint32_t end = width)
+    ascii_screen& set_row(std::uint32_t row, char new_character, const std::any& addition_data, std::uint32_t start = 0, std::uint32_t end = width) requires(is_add_addition)
     {
         lo_assert(row >= 0 && row < height);
         lo_assert(start >= 0 && start <= width && start <= end && end <= width);
@@ -276,9 +261,7 @@ public:
         return *this;
     }
 
-    ascii_screen_enable_if_add_addition
-        ascii_screen&
-        set_addition_data_columu(std::uint32_t columu, const std::any& addition_data, std::uint32_t start = 0, std::uint32_t end = height)
+    ascii_screen& set_addition_data_columu(std::uint32_t columu, const std::any& addition_data, std::uint32_t start = 0, std::uint32_t end = height) requires(is_add_addition)
     {
         lo_assert(columu >= 0 && columu < width);
         lo_assert(start >= 0 && start <= height && start <= end && end <= height);
@@ -287,9 +270,7 @@ public:
         return *this;
     }
 
-    ascii_screen_enable_if_add_addition
-        ascii_screen&
-        set_columu(std::uint32_t columu, char new_character, const std::any& addition_data, std::uint32_t start = 0, std::uint32_t end = width)
+    ascii_screen& set_columu(std::uint32_t columu, char new_character, const std::any& addition_data, std::uint32_t start = 0, std::uint32_t end = width) requires(is_add_addition)
     {
         lo_assert(columu >= 0 && columu < width);
         lo_assert(start >= 0 && start <= height && start <= end && end <= height);

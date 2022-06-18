@@ -51,7 +51,7 @@ constexpr auto LOERR_DETAIL_SLASH = '/';
 #endif
 
 // Format src location
-constexpr const char* get_file_name(const char* file_path)
+consteval const char* get_file_name(const char* file_path)
 {
     char temp_char = '\0';
     int index = 0;

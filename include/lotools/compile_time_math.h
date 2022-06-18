@@ -19,7 +19,7 @@ struct power<0, base>
 };
 
 template <typename IntegerType>
-constexpr std::size_t get_value_digit(IntegerType value = std::numeric_limits<IntegerType>::max())
+consteval std::size_t get_value_digit(IntegerType value = std::numeric_limits<IntegerType>::max())
 {
     static_assert(std::is_integral_v<IntegerType>, "IntegerType must be integral type");
     int digit = 0;

@@ -81,14 +81,14 @@ struct unique_val : private detail::add_del_if_not_void<Del>
 {
     using base = detail::add_del_if_not_void<Del>;
 
-    template <typename T2 = T, typename Del2 = Del, std::enable_if_t<std::is_default_constructible_v<T2> && (std::is_same_v<Del2, void> || std::is_default_constructible_v<Del2>), int> = 0>
-    constexpr unique_val() {}; // NOLINT(modernize-use-equals-default)
+    constexpr unique_val() requires(std::default_initializable<T> && (std::same_as<Del, void> || std::default_initializable<Del>))
+        = default;
 
-    template <typename Del2 = Del, std::enable_if_t<!std::is_same_v<Del2, void>, int> = 0>
-    constexpr unique_val(const T& val, Del2 del) : base(del, true), val(val) { }
+    template <typename Del2 = Del>
+    constexpr unique_val(const T& val, Del2 del) requires(!std::same_as<Del, void>)
+        : base(del, true), val(val) { }
 
-    template <typename Del2 = Del, std::enable_if_t<std::is_same_v<Del2, void> || std::is_default_constructible_v<Del2>, int> = 0>
-    explicit unique_val(const T& val) : val(val) { }
+    explicit unique_val(const T& val) requires(std::same_as<Del, void> || std::default_initializable<Del>) : val(val) { }
 
     unique_val(const unique_val&) = delete;
     unique_val& operator=(const unique_val&) = delete;

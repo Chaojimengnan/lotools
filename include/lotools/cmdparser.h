@@ -18,7 +18,7 @@ class cmdparser;
 
 struct basic_command // NOLINT(cppcoreguidelines-special-member-functions)
 {
-    [[nodiscard]] virtual const char* name() const noexcept = 0;
+    [[nodiscard]] constexpr virtual const char* name() const noexcept = 0;
     [[nodiscard]] virtual std::any info(const std::any* info = nullptr) const noexcept
     {
         if (info == nullptr)
@@ -26,40 +26,41 @@ struct basic_command // NOLINT(cppcoreguidelines-special-member-functions)
 
         return *info;
     }
-    virtual void perform(const cmdparser& args) const = 0;
+    virtual constexpr void perform(const cmdparser& args) const = 0;
     virtual ~basic_command() = default;
 };
 
+template <auto handler, auto info_handler = nullptr>
 struct lambda_command : basic_command
 {
-    lambda_command(std::string name, std::function<void(const cmdparser&)> handler, const std::function<std::any(const std::any*)>& info_handler = {}) : name_(std::move(name)), handler_(std::move(handler))
+    lambda_command(std::string name) : name_(std::move(name))
     {
-        if (info_handler)
-            info_handler_ = info_handler;
+        // if (info_handler)
+        //     info_handler_ = info_handler;
     }
 
-    [[nodiscard]] const char* name() const noexcept override
+    [[nodiscard]] constexpr const char* name() const noexcept override
     {
         return name_.c_str();
     }
 
     [[nodiscard]] std::any info(const std::any* info) const noexcept override
     {
-        if (info_handler_)
-            return info_handler_(info);
+        if constexpr (info_handler != nullptr)
+            return info_handler(info);
 
         return basic_command::info(info);
     }
 
-    void perform(const cmdparser& args) const override
+    constexpr void perform(const cmdparser& args) const override
     {
-        handler_(args);
+        handler(args);
     }
 
 private:
     std::string name_;
-    std::function<std::any(const std::any*)> info_handler_;
-    std::function<void(const cmdparser& args)> handler_;
+    // std::function<std::any(const std::any*)> info_handler_;
+    // std::function<void(const cmdparser& args)> handler_;
 };
 
 class args_parse_error : public std::runtime_error
@@ -98,7 +99,7 @@ public:
             // current_item is an option pair
             if (auto equal_pos = item.find('=');
                 equal_pos != std::string_view::npos && item.size() >= 3
-                && item.substr(0, 2) == "--")
+                && item.starts_with("--"))
             {
                 std::string_view key = item.substr(0, equal_pos);
                 std::string_view value = item.substr(equal_pos + 1);
@@ -107,7 +108,7 @@ public:
             }
 
             // current_item is an option
-            if (item.size() >= 3 && item.substr(0, 2) == "--")
+            if (item.size() >= 3 && item.starts_with("--"))
             {
                 option_list_.push_back(item);
                 continue;
@@ -152,10 +153,11 @@ public:
         return *this;
     }
 
-    cmdparser& add(const std::string& name, const std::function<void(const cmdparser& args)>& handler, const std::function<std::any(const std::any*)>& info_handler = {})
+    template <auto handler, auto info_handler = nullptr>
+    cmdparser& add(const std::string& name)
     {
         lo_assert(!is_parsed_);
-        command_map_[name] = std::make_unique<lambda_command>(name, handler, info_handler);
+        command_map_[name] = std::make_unique<lambda_command<handler, info_handler>>(name);
         return *this;
     }
 
