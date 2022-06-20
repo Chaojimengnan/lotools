@@ -35,8 +35,6 @@ struct lambda_command : basic_command
 {
     lambda_command(std::string name) : name_(std::move(name))
     {
-        // if (info_handler)
-        //     info_handler_ = info_handler;
     }
 
     [[nodiscard]] constexpr const char* name() const noexcept override
@@ -59,8 +57,6 @@ struct lambda_command : basic_command
 
 private:
     std::string name_;
-    // std::function<std::any(const std::any*)> info_handler_;
-    // std::function<void(const cmdparser& args)> handler_;
 };
 
 class args_parse_error : public std::runtime_error
