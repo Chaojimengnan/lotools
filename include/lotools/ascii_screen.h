@@ -4,6 +4,7 @@
 #include <any>
 #include <array>
 #include <cstddef>
+#include <cstring>
 #include <memory>
 #include <ostream>
 #include <string>

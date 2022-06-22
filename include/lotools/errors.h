@@ -45,8 +45,9 @@ decltype(auto) forward_call(const char* filename, int line, const char* funcname
     }
 }
 
+// Fixed zero arguments bugs https://stackoverflow.com/questions/5891221/variadic-macros-with-zero-arguments
 #ifndef lotcall
-#    define lotcall(reset_func, handler, cond, func, ...) ::lot::forward_call(::lot::get_file_name(__FILE__), __LINE__, __FUNCTION__, reset_func, handler, cond, func, __VA_ARGS__) // NOLINT(cppcoreguidelines-macro-usage)
+#    define lotcall(reset_func, handler, cond, func, ...) ::lot::forward_call(::lot::get_file_name(__FILE__), __LINE__, __FUNCTION__, reset_func, handler, cond, func, ##__VA_ARGS__) // NOLINT(cppcoreguidelines-macro-usage)
 #endif
 
 } // namespace lot
